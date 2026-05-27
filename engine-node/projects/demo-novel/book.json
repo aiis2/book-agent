@@ -1,0 +1,11 @@
+{
+  "id": "demo-novel",
+  "title": "Demo Novel",
+  "platform": "other",
+  "genre": "other",
+  "status": "outlining",
+  "targetChapters": 200,
+  "chapterWordCount": 3000,
+  "createdAt": "2026-05-26T11:04:26.688Z",
+  "updatedAt": "2026-05-26T11:04:26.688Z"
+}

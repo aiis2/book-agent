@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Book Hermes Browser Smoke</title>
+    <style>
+      :root {
+        --paper: #f3ede2;
+        --ink: #1f2321;
+        --accent: #a34b2f;
+        --accent-2: #29473f;
+        --panel: rgba(255, 252, 246, 0.88);
+        --line: rgba(31, 35, 33, 0.14);
+        --shadow: 0 20px 60px rgba(41, 27, 17, 0.16);
+        --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+        --sans: "Segoe UI Variable", "Aptos", "Trebuchet MS", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(163, 75, 47, 0.18), transparent 32%),
+          radial-gradient(circle at bottom right, rgba(41, 71, 63, 0.22), transparent 34%),
+          linear-gradient(135deg, #e8dcc7, var(--paper));
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+
+      header {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        letter-spacing: 0.03em;
+      }
+
+      .lede {
+        max-width: 70ch;
+        line-height: 1.6;
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .card,
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .hero {
+        padding: 22px;
+      }
+
+      .card {
+        padding: 16px 18px;
+      }
+
+      .label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        opacity: 0.72;
+      }
+
+      .value {
+        margin-top: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        word-break: break-all;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel h2 {
+        margin: 0 0 14px;
+        font-size: 1.1rem;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 16px;
+        font: inherit;
+        cursor: pointer;
+        transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), #cf7a52);
+        box-shadow: 0 12px 24px rgba(163, 75, 47, 0.22);
+      }
+
+      button.secondary {
+        background: linear-gradient(135deg, var(--accent-2), #466c61);
+        box-shadow: 0 12px 24px rgba(41, 71, 63, 0.22);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .hint {
+        margin: 12px 0 0;
+        line-height: 1.5;
+        opacity: 0.78;
+      }
+
+      pre,
+      code {
+        font-family: var(--mono);
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(31, 35, 33, 0.05);
+        border-radius: 18px;
+        padding: 14px;
+        line-height: 1.5;
+        max-height: 560px;
+        overflow: auto;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+        line-height: 1.6;
+      }
+
+      .history li {
+        margin-bottom: 6px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        background: rgba(41, 71, 63, 0.08);
+      }
+
+      .status-pill.fail {
+        background: rgba(163, 75, 47, 0.14);
+      }
+
+      @media (max-width: 980px) {
+        .status-strip,
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <h1>Book Hermes Browser Smoke</h1>
+        <p class="lede">
+          This page exercises the Python host to Node engine bridge inside a disposable local workspace.
+          It is a verification harness, not product UI. Reset the workspace, then run either the full flow
+          or individual operations to inspect envelopes and generated files.
+        </p>
+        <div id="run-status" class="status-pill">Ready</div>
+      </header>
+
+      <section class="status-strip">
+        <article class="card">
+          <div class="label">Workspace</div>
+          <div class="value" id="workspace-path">Loading...</div>
+        </article>
+        <article class="card">
+          <div class="label">Current Book</div>
+          <div class="value" id="current-book">None</div>
+        </article>
+        <article class="card">
+          <div class="label">Current Chapter</div>
+          <div class="value" id="current-chapter">None</div>
+        </article>
+      </section>
+
+      <section class="layout">
+        <div class="panel">
+          <h2>Operations</h2>
+          <div class="button-grid" id="button-grid"></div>
+          <p class="hint">
+            Full workflow covers create_book, update_author_intent, update_current_focus, develop_book,
+            write_next, revise_chapter, edit_truth_file, rename_entity, run_interaction, export_book,
+            short_fiction_run, and generate_cover.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h2>Workspace Files</h2>
+          <pre id="file-list">[]</pre>
+        </div>
+
+        <div class="panel">
+          <h2>Last Result</h2>
+          <pre id="result-view">{}</pre>
+        </div>
+
+        <div class="panel">
+          <h2>Operation History</h2>
+          <ul id="history-list" class="history"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        currentBookId: null,
+        currentChapterId: null,
+      };
+
+      const elements = {
+        workspacePath: document.querySelector('#workspace-path'),
+        currentBook: document.querySelector('#current-book'),
+        currentChapter: document.querySelector('#current-chapter'),
+        fileList: document.querySelector('#file-list'),
+        resultView: document.querySelector('#result-view'),
+        historyList: document.querySelector('#history-list'),
+        buttonGrid: document.querySelector('#button-grid'),
+        runStatus: document.querySelector('#run-status'),
+      };
+
+      function setStatus(message, failed = false) {
+        elements.runStatus.textContent = message;
+        elements.runStatus.classList.toggle('fail', failed);
+      }
+
+      function applySnapshot(snapshot) {
+        state.currentBookId = snapshot.currentBookId || null;
+        state.currentChapterId = snapshot.currentChapterId || null;
+        elements.workspacePath.textContent = snapshot.workspace || 'Unavailable';
+        elements.currentBook.textContent = state.currentBookId || 'None';
+        elements.currentChapter.textContent = state.currentChapterId || 'None';
+        elements.fileList.textContent = JSON.stringify(snapshot.files || [], null, 2);
+        elements.historyList.innerHTML = '';
+
+        for (const item of snapshot.operations || []) {
+          const li = document.createElement('li');
+          li.textContent = `${item.timestamp} | ${item.operation} | ${item.ok ? 'ok' : 'failed'} | exit ${item.exitCode}`;
+          elements.historyList.appendChild(li);
+        }
+
+        renderButtons();
+      }
+
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        return response.json();
+      }
+
+      async function resetWorkspace() {
+        setStatus('Resetting workspace...');
+        const snapshot = await fetchJson('/api/reset', { method: 'POST' });
+        applySnapshot(snapshot);
+        elements.resultView.textContent = JSON.stringify(snapshot, null, 2);
+        setStatus('Workspace reset');
+      }
+
+      async function runBridge(operation, payload) {
+        setStatus(`Running ${operation}...`);
+        const snapshot = await fetchJson('/api/bridge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation, payload }),
+        });
+        applySnapshot(snapshot);
+        elements.resultView.textContent = JSON.stringify(snapshot, null, 2);
+        setStatus(snapshot.ok ? `${operation} passed` : `${operation} failed`, !snapshot.ok);
+        return snapshot;
+      }
+
+      function requireBookId() {
+        if (!state.currentBookId) {
+          throw new Error('Create a book first.');
+        }
+        return state.currentBookId;
+      }
+
+      function requireChapterId() {
+        if (!state.currentChapterId) {
+          throw new Error('Write a chapter first.');
+        }
+        return state.currentChapterId;
+      }
+
+      const operations = [
+        {
+          label: 'Reset Workspace',
+          className: 'secondary',
+          run: () => resetWorkspace(),
+        },
+        {
+          label: 'Create Book',
+          run: () => runBridge('create_book', {
+            title: 'Night Harbor',
+            genre: 'mystery',
+            platform: 'qidian',
+            authorIntent: 'Inspector Vale must stay cold while the harbor closes in.',
+            currentFocus: 'Inspector Vale reaches the frozen dock before dawn.',
+          }),
+        },
+        {
+          label: 'Update Author Intent',
+          needsBook: true,
+          run: () => runBridge('update_author_intent', {
+            bookId: requireBookId(),
+            content: 'Inspector Vale must look detached while protecting the one witness who still trusts him.',
+          }),
+        },
+        {
+          label: 'Update Current Focus',
+          needsBook: true,
+          run: () => runBridge('update_current_focus', {
+            bookId: requireBookId(),
+            content: 'Inspector Vale studies the ledger while the tide erases the blood on the dock.',
+          }),
+        },
+        {
+          label: 'Develop Book',
+          needsBook: true,
+          run: () => runBridge('develop_book', {
+            bookId: requireBookId(),
+            note: 'Tighten the suspect triangle around Vale, Rowan, and the harbormaster.',
+            currentFocus: 'Inspector Vale corners Rowan beside the harbor cranes.',
+          }),
+        },
+        {
+          label: 'Write Next',
+          needsBook: true,
+          run: () => runBridge('write_next', {
+            bookId: requireBookId(),
+            title: 'Cold Dock',
+            content: 'Inspector Vale meets Rowan under the cranes and learns the ledger is forged.',
+            summary: 'Vale confronts Rowan about the forged ledger.',
+            nextFocus: 'Inspector Vale now needs proof before the harbormaster burns the records.',
+          }),
+        },
+        {
+          label: 'Revise Chapter',
+          needsChapter: true,
+          run: () => runBridge('revise_chapter', {
+            bookId: requireBookId(),
+            chapterId: requireChapterId(),
+            revisedContent: 'Inspector Vale traps Rowan beneath the cranes and proves the ledger pages were switched.',
+            summary: 'Vale forces Rowan to admit the ledger pages were switched.',
+          }),
+        },
+        {
+          label: 'Edit Truth File',
+          needsBook: true,
+          run: () => runBridge('edit_truth_file', {
+            bookId: requireBookId(),
+            truthFile: 'harbor-facts.md',
+            content: 'Rowan saw the harbormaster switch the ledger pages before dawn.',
+          }),
+        },
+        {
+          label: 'Rename Entity',
+          needsBook: true,
+          run: () => runBridge('rename_entity', {
+            bookId: requireBookId(),
+            from: 'Rowan',
+            to: 'Mara',
+          }),
+        },
+        {
+          label: 'Run Interaction',
+          needsBook: true,
+          run: () => runBridge('run_interaction', {
+            bookId: requireBookId(),
+            prompt: 'Track how Mara pressures Vale into choosing between evidence and loyalty.',
+          }),
+        },
+        {
+          label: 'Delegated Interaction',
+          needsBook: true,
+          run: () => runBridge('run_interaction', {
+            bookId: requireBookId(),
+            action: 'update_current_focus',
+            prompt: 'Shift the next beat toward the archive fire.',
+            actionPayload: {
+              content: 'Inspector Vale races toward the records archive before Mara can reach the fire first.',
+            },
+          }),
+        },
+        {
+          label: 'Export Book',
+          needsBook: true,
+          run: () => runBridge('export_book', {
+            bookId: requireBookId(),
+          }),
+        },
+        {
+          label: 'Short Fiction Run',
+          needsBook: true,
+          run: () => runBridge('short_fiction_run', {
+            bookId: requireBookId(),
+            title: 'Harbor Ashes',
+            prompt: 'Write the archive fire as a compact side story.',
+          }),
+        },
+        {
+          label: 'Generate Cover',
+          needsBook: true,
+          run: () => runBridge('generate_cover', {
+            bookId: requireBookId(),
+            style: 'grainy noir poster',
+            mood: 'cold, investigative, tense',
+          }),
+        },
+        {
+          label: 'Run Full Workflow',
+          className: 'secondary',
+          run: async () => {
+            await resetWorkspace();
+            for (const label of [
+              'Create Book',
+              'Update Author Intent',
+              'Update Current Focus',
+              'Develop Book',
+              'Write Next',
+              'Revise Chapter',
+              'Edit Truth File',
+              'Rename Entity',
+              'Run Interaction',
+              'Delegated Interaction',
+              'Export Book',
+              'Short Fiction Run',
+              'Generate Cover',
+            ]) {
+              const operation = operations.find((candidate) => candidate.label === label);
+              await operation.run();
+            }
+          },
+        },
+      ];
+
+      function renderButtons() {
+        elements.buttonGrid.innerHTML = '';
+        for (const operation of operations) {
+          const button = document.createElement('button');
+          button.textContent = operation.label;
+          if (operation.className) {
+            button.className = operation.className;
+          }
+          if ((operation.needsBook && !state.currentBookId) || (operation.needsChapter && !state.currentChapterId)) {
+            button.disabled = true;
+          }
+          button.addEventListener('click', async () => {
+            try {
+              await operation.run();
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              setStatus(message, true);
+              elements.resultView.textContent = JSON.stringify({ error: message }, null, 2);
+            }
+          });
+          elements.buttonGrid.appendChild(button);
+        }
+      }
+
+      async function bootstrap() {
+        setStatus('Loading state...');
+        const snapshot = await fetchJson('/api/state');
+        applySnapshot(snapshot);
+        elements.resultView.textContent = JSON.stringify(snapshot, null, 2);
+        setStatus('Ready');
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>

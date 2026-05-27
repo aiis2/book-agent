@@ -1,0 +1,149 @@
+{
+  "objective": "持续完成 Book Hermes Agent 至最终产品形态，完成 Hermes+InkOS 主要功能迁移，补齐多小说隔离、人物画像、角色血缘/关系、时空时序(Zep)能力，并交付可预览/维护/手动修改的现代化 React+Vite+Ant Design 前端，同时用真实测试验证整体结果。",
+  "requirements": [
+    "在内建 goal 持久化不可用时继续使用仓库内自驱 goal 机制。",
+    "保持 Hermes + InkOS 的主要功能完整，不通过删减功能换取完成。",
+    "访问并对齐 Hermes agent + InkOS 社区源码中的主能力边界，而不是只停留在文档级映射。",
+    "以本仓 copy/vendor/adapt 后的本地实现为准，不依赖运行时对接上游 Hermes 或 InkOS 安装体或服务。",
+    "完成完整迁移实施，而不是停留在薄适配。",
+    "支持小说区分与多项目/多小说管理。",
+    "增加人物画像、血缘/角色关系管理。",
+    "增加时空时序构建能力，并以 Zep 相关结构承载或适配。",
+    "支持前端查看预览、维护、手动修改。",
+    "构建完整且现代化的 React + Vite + Ant Design 前端页面。",
+    "实现后进行真实测试验证。"
+  ],
+  "scope": [
+    "host-python Hermes-derived runtime",
+    "engine-node InkOS-derived runtime",
+    "shared contracts",
+    "project persistence and workspace artifacts",
+    "frontend web app",
+    "browser/runtime verification surfaces"
+  ],
+  "mustNotRegress": [
+    "existing host-python CLI commands and session state",
+    "existing engine-node bridge contract and deterministic smoke mode",
+    "already migrated interaction normalization, transcript persistence, global session, short-fiction packaging, and workspace schema validation"
+  ],
+  "constraints": [
+    "copy-first, thin adapters, host-python vs engine-node boundary",
+    "default license assumption remains AGPL",
+    "workspace is not a git repository",
+    "UI uses React + Vite + Ant Design and should follow Ant Design component guidance"
+  ],
+  "currentEnvironment": {
+    "repoRoot": "D:\\python_project\\book_agent",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.3"
+  },
+  "requiredTools": [
+    "python",
+    "node",
+    "browser smoke harness",
+    "vite",
+    "Ant Design"
+  ],
+  "validationProofPlan": [
+    "python -m unittest discover -s host-python/tests",
+    "node --test engine-node/tests/*.test.mjs",
+    "frontend build/test commands discovered from the new web app",
+    "browser smoke workflow",
+    "manual/browser verification of CRUD and preview flows"
+  ],
+  "inspectionEvidence": [
+    "Expanded goal replaced the earlier migration-only objective and now includes final-product web UI, multi-novel management, character graph, bloodline/relationship, and timeline/Zep requirements.",
+    "Workspace currently exposes host-python and engine-node directories only; no frontend package.json exists outside engine-node, so the requested React+Vite+Ant Design web app is still absent until inspected further.",
+    "The current host surface is still a small CLI with create-book, write-next, chat, list-tools, and session-status commands; no web server or frontend-facing API exists yet.",
+    "The shared contract still documents only bridge request/response envelopes and v1 engine operations; it does not yet cover multi-novel catalog, character graph, bloodline/relationship, timeline, or frontend CRUD flows.",
+    "Repository search found Ant Design references only in design documents and the active goal record, not in a real React/Vite web app implementation.",
+    "Zep research indicates the relevant minimum modeling seam is a temporal memory graph with episodes, entities, facts/relations, and valid/invalid time intervals rather than a flat timeline list.",
+    "A new ui-web React + Vite TypeScript application has now been scaffolded under D:\\python_project\\book_agent\\ui-web.",
+    "npm view antd version reports 6.4.3, which matches the requested Ant Design v6 line for the frontend implementation.",
+    "ui-web now contains a real Ant Design management console implementation rather than the default Vite starter, including catalog, overview, chapters, characters, relationships, and Zep tabs wired to the new API client.",
+    "Browser validation on 2026-05-27 confirmed the built ui-web console loads against the local engine API and exposes the catalog, overview, character editor, relationship editor, and Zep graph editor surfaces.",
+    "A fresh ui-web production build on 2026-05-27 initially emitted a single 1082.91 kB application chunk with a Vite chunk-size warning, confirming a frontend bundle-splitting gap in the current implementation.",
+    "After adding manual vendor chunking in ui-web/vite.config.ts, a fresh ui-web production build no longer emitted the chunk-size warning and reduced the largest JavaScript asset to vendor-antd at 491.78 kB.",
+    "Local upstream clones are available at d:\\npm_work\\inkos and d:\\npm_work\\hermes-agent, so GitHub-community alignment can now be verified against real source files instead of only plan docs.",
+    "A direct comparison against d:\\npm_work\\inkos\\packages\\core\\src\\interaction\\runtime.ts and project-session-store.ts shows the current repository still lacks the richer InkOS interaction session/runtime layer: the bridge persists only minimal global session fields while upstream carries InteractionSession, currentExecution, pendingDecision, messages, and automation mode semantics.",
+    "A direct comparison against d:\\npm_work\\hermes-agent shows the current host runtime still adapts Hermes plugin and registry concepts locally and has not yet brought over a fuller run_agent-style host loop, so the next actionable seam should stay narrow and concentrate on the missing InkOS runtime/session layer first.",
+    "The repository now vendors the upstream InkOS interaction events/session schemas plus a narrow runtime wrapper, and `run_interaction` persists a backward-compatible InteractionSession snapshot in `.inkos/session.json` with messages, events, currentExecution, and pendingDecision semantics.",
+    "Upstream community source provenance is now verified locally: `d:\\npm_work\\hermes-agent` resolves to GitHub remote `https://github.com/NousResearch/hermes-agent.git`, and `d:\\npm_work\\inkos` includes README/package metadata pointing to `https://github.com/Narcooo/inkos`.",
+    "Repo-root .env inspection on 2026-05-27 confirmed that API_KEY is present; engine-node/src/adapters/model-client.mjs accepts BOOK_AGENT_API_KEY, DEEPSEEK_API_KEY, or API_KEY, so the old missing-credentials blocker was falsified.",
+    "Live-model validation on 2026-05-27 completed against the repo-local vendored implementation: create_book, write_next, chat, revise_chapter, short_fiction_run, packaging generation, and generate_cover all returned generation.mode=model with model=deepseek-v4-pro in disposable workspaces."
+  ],
+  "discoveredIssues": [
+    "A production frontend app is completely missing: there is no React+Vite+Ant Design project yet, only the browser smoke HTML harness.",
+    "The current runtime exposes no frontend-oriented API surface for multi-novel catalog, character profile maintenance, relationship/bloodline editing, timeline/Zep data, or preview workflows.",
+    "No existing repository implementation or integration point for Zep timeline/temporal modeling was found during the initial expanded-scope inspection.",
+    "Current project persistence has no episode/entity/fact temporal graph structure, so it cannot yet satisfy the requested Zep-style time-space chronology capability.",
+    "The frontend production build emits a single 1082.91 kB application chunk and triggers a Vite chunk-size warning, so the console still has an avoidable initial-load and caching regression.",
+    "The engine bridge still lacks the richer InkOS interaction runtime/session layer from upstream runtime.ts and project-session-store.ts: .inkos/session.json only stores global activeBookId/automationMode and does not yet persist a project InteractionSession with messages, events, currentExecution, and pendingDecision."
+  ],
+  "issueResolutions": [
+    "Issue 'The current runtime exposes no frontend-oriented API surface for multi-novel catalog, character profile maintenance, relationship/bloodline editing, timeline/Zep data, or preview workflows.' resolved by adding engine-node/src/api-server.mjs plus catalog/domain/chapter/export endpoints backed by persisted project artifacts.",
+    "Issue 'Current project persistence has no episode/entity/fact temporal graph structure, so it cannot yet satisfy the requested Zep-style time-space chronology capability.' resolved by adding persisted character, relationship, and Zep graph artifacts plus sync into episode/entity/fact temporal structures.",
+    "Issue 'A production frontend app is completely missing: there is no React+Vite+Ant Design project yet, only the browser smoke HTML harness.' resolved by scaffolding ui-web, replacing the Vite starter with an Ant Design management console, and wiring it to the engine HTTP API.",
+    "Issue 'The frontend production build emits a single 1082.91 kB application chunk and triggers a Vite chunk-size warning, so the console still has an avoidable initial-load and caching regression.' resolved by adding manual vendor chunking in ui-web/vite.config.ts and verifying that the rebuilt output no longer reports a chunk-size warning.",
+    "Issue 'The engine bridge still lacks the richer InkOS interaction runtime/session layer from upstream runtime.ts and project-session-store.ts: .inkos/session.json only stores global activeBookId/automationMode and does not yet persist a project InteractionSession with messages, events, currentExecution, and pendingDecision.' resolved by vendoring upstream event/session schemas, expanding interaction-session-store.mjs into a backward-compatible InteractionSession store, and wrapping `run_interaction` with a narrow interaction-runtime.mjs lifecycle.",
+    "Issue 'Live-model validation is blocked by missing credentials: API_KEY, DEEPSEEK_API_KEY, and BOOK_AGENT_API_KEY are all absent, so generated write/revise/interaction flows cannot be verified against a real model in this environment.' resolved by proving repo-root API_KEY presence, clarifying BOOK_AGENT_API_KEY as an optional local alias, and completing live model runs for write_next, chat, revise_chapter, short_fiction_run, and generate_cover."
+  ],
+  "resolvedIssues": [
+    "The runtime now exposes a frontend-oriented HTTP API for multi-novel catalog, metadata, character, relationship, Zep graph, chapter, and export workflows.",
+    "Project persistence now includes Zep-style temporal graph data with episodes, entities, and facts synchronized from character and relationship artifacts.",
+    "The production frontend app is no longer missing: ui-web now provides a React + Vite + Ant Design console for catalog, metadata, chapter, character, relationship, and Zep maintenance workflows.",
+    "The frontend production bundle no longer ships as a single oversized entry chunk; ui-web now emits split vendor assets and clears the Vite chunk-size warning.",
+    "The engine now persists an upstream-aligned InteractionSession snapshot in `.inkos/session.json`, including messages, events, currentExecution, and manual-mode pending decisions around `run_interaction`.",
+    "Live model validation is no longer blocked: the repo-root API_KEY is sufficient for DeepSeek-compatible generation, and BOOK_AGENT_API_KEY is only an optional project-local alias for the same credential."
+  ],
+  "verificationResults": [
+    "node --test engine-node/tests/*.test.mjs => 13 pass, 0 fail after domain-model and API migration.",
+    "python -m unittest discover -s host-python/tests => 7 tests OK after domain-model and API migration.",
+    "Set-Location ui-web; npm run build => passed after fixing App.tsx effect flow and API typing.",
+    "Set-Location ui-web; npm run lint => passed after removing the unused import and refactoring the initial data-loading effects.",
+    "Set-Location engine-node; npm test => 13 pass, 0 fail after fixing the Windows main-module check in src/api-server.mjs.",
+    "python -m unittest discover -s host-python/tests => 7 tests OK after frontend and runtime integration changes.",
+    "Runtime probe: engine API served /api/health and /api/books on 127.0.0.1:4319; POST /api/books plus GET /api/books/demo-novel both succeeded.",
+    "Runtime probe: npx vite preview --host 127.0.0.1 --port 4173 served the built frontend on 127.0.0.1:4173 and returned the Vite root HTML.",
+    "Browser smoke harness: python scripts\\bridge_smoke_server.py 8876 plus harness API completed the full workflow from create_book through generate_cover with FINAL_OK=True, exit 0, export present, transcript present, and cover artifacts present.",
+    "Browser UI verification on 2026-05-27 loaded http://127.0.0.1:4173 against the live local API, rendered the Demo Novel dashboard, opened the character and relationship editor modals, and confirmed the Timeline / Zep editor surface.",
+    "Set-Location ui-web; npm run build => passed after adding manual vendor chunking; the largest emitted JavaScript asset is vendor-antd at 491.78 kB and the previous chunk-size warning no longer appears.",
+    "Set-Location engine-node; node --test tests/interaction-session-store.test.mjs => 2 pass, 0 fail after adding the narrow InkOS-style interaction runtime/session layer.",
+    "Set-Location engine-node; npm test => 15 pass, 0 fail after vendoring interaction events/session schemas and persisting the richer `.inkos/session.json` snapshot.",
+    "Set-Location host-python; python -m unittest discover -s tests => 7 tests OK after the engine-side session/runtime migration.",
+    "Repo-root .env inspection on 2026-05-27 confirmed API_KEY is present; engine-node/src/adapters/model-client.mjs accepts BOOK_AGENT_API_KEY, DEEPSEEK_API_KEY, or API_KEY and resolved live generation to deepseek-v4-pro.",
+    "Live end-to-end validation on 2026-05-27: create_book + write_next + chat + revise_chapter all returned generation.mode=model and model=deepseek-v4-pro; revise_chapter incremented the chapter revision to 2 and returned a real assistant suggestion.",
+    "Live generation validation on 2026-05-27: short_fiction_run, packaging generation, and generate_cover all returned generation.mode=model and model=deepseek-v4-pro, producing exports/harbor-embers.md and covers/cover-prompt.md in a disposable workspace."
+  ],
+  "requirementCoverage": [
+    "The backend now supports multi-novel catalog, character profile maintenance, relationship/bloodline editing, and Zep-style temporal graph persistence through a local HTTP API.",
+    "The requested React + Vite + Ant Design frontend is now implemented and validated with build, lint, preview, and API-backed runtime probes.",
+    "Real-model verification now covers the local vendored implementation for write, chat, revise, short-fiction, packaging, and cover-generation flows."
+  ],
+  "doneSoFar": [
+    "Added engine-node/src/adapters/book-domain.mjs for multi-novel catalog, character profiles, relationships, and Zep graph persistence.",
+    "Added engine-node/src/api-server.mjs and frontend-oriented CRUD/preview endpoints for books, metadata, chapters, characters, relationships, Zep graph, and export.",
+    "Added Node tests covering the new domain and API surfaces without regressing the existing bridge and host test suites.",
+    "Scaffolded the ui-web React + Vite TypeScript frontend application as the basis for the requested modern web UI.",
+    "Installed antd@6.4.3 and @ant-design/icons into ui-web.",
+    "Replaced the Vite starter page with a React + Ant Design console wired to the engine API surface and added a Vite /api proxy to the local engine server.",
+    "Fixed ui-web TypeScript and React Hooks lint issues so the web console now builds cleanly.",
+    "Fixed engine-node/src/api-server.mjs entrypoint detection on Windows so npm run api stays resident as a real local server.",
+    "Updated DESIGN.md, engine-node/README.md, ui-web/README.md, and shared/contracts/book-engine-api.md to document the integrated web/API architecture.",
+    "Optimized ui-web production bundling with manual vendor chunking so the Ant Design console now ships as split assets instead of one oversized application chunk.",
+    "Expanded the vendored InkOS interaction seam with events/session schemas and added a narrow interaction-runtime lifecycle so `.inkos/session.json` now tracks InteractionSession state around `run_interaction`.",
+    "Verified that the repo-root API_KEY drives DeepSeek-compatible live generation, documented BOOK_AGENT_API_KEY as an optional local alias, and completed live model validation for write_next, chat, revise_chapter, short_fiction_run, and generate_cover."
+  ],
+  "remaining": [],
+  "blockers": [],
+  "completionAudit": [
+    "Objective achieved: host-python, engine-node, shared contracts, persisted story-domain artifacts, local HTTP API, ui-web management console, and the narrow InkOS interaction runtime/session seam were all implemented and verified.",
+    "Explicit requirements covered: multi-novel management, character profiles, bloodline/relationship maintenance, Zep-style temporal graph persistence, frontend preview/maintenance/manual editing, and modern React+Vite+Ant Design UI are implemented.",
+    "Checks run and passing: engine-node interaction-session-store test (2/2), engine-node npm test (15/15), host-python unittest (7/7), ui-web npm run build, ui-web npm run lint, local API health/catalog/create/detail probes, frontend preview HTTP probe, browser UI surface verification, frontend bundle-splitting rebuild verification, and live model validation for write/chat/revise/short-fiction/cover flows.",
+    "The current repository scope is explicitly a local copy/vendor/adapt implementation aligned to Hermes and InkOS community sources, not a runtime integration with external Hermes or InkOS services."
+  ],
+  "completionStatus": "completed",
+  "openedAt": "2026-05-26T09:32:52.101718+00:00",
+  "updatedAt": "2026-05-27T11:56:57.5159216+08:00",
+  "closedAt": "2026-05-27T11:56:57.5159216+08:00"
+}
